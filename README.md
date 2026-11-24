@@ -4,6 +4,19 @@
 
 > 非官方扩展。基于 [shaoeric/trae-token-usage](https://github.com/shaoeric/trae-token-usage) 固定版本 `1720421` 二次开发，保留 MIT License。
 
+## English Introduction
+
+Trae Token Cost is a local token-usage and cost-tracking extension for TRAE CN. It reads real per-call tokens (input, output, cache read/write, reasoning) through a CDP breakpoint whitelist, estimates cost per call against a built-in Bailian official price snapshot, and ships a glassmorphic web dashboard with dark/light themes, an activity heatmap, model/day drill-downs, first-response and latency metrics, and a built-in metrics explainer. A launchd agent keeps capture running in the background even when workspaces are closed. All data stays in a local SQLite database — no chat content is collected, and nothing is exposed beyond localhost.
+
+Highlights:
+
+- **Real token capture** — input, output, cache read/write, reasoning; no chat content stored.
+- **Cost estimation** — Bailian price snapshot plus custom overrides, tiered and peak/off-peak pricing.
+- **Dual-channel latency** — server-side timing for Agent/SSH sessions plus local network timestamps.
+- **Glassmorphic dashboard** — G1 dark / G2 light themes, 3D refraction, red heatmap, drill-downs.
+- **Resident capture** — launchd auto-start, leader election and process lock.
+- **Local-first privacy** — local SQLite only, localhost-bound service, CSV/JSON export.
+
 ## 你能用它做什么
 
 - 查看今日、近 7 日、近 30 日及全部 Token 用量。
