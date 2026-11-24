@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src {{cspSource}} 'unsafe-inline'; script-src 'nonce-{{nonce}}'; img-src {{cspSource}} data:; connect-src {{cspSource}};" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trae Token 费用</title>
+  <style>
+    :root {
+      --card-bg: color-mix(in srgb, var(--vscode-editor-background) 92%, var(--vscode-editor-foreground) 8%);
+      --muted: var(--vscode-descriptionForeground);
+      --border: var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
+      --accent: var(--vscode-charts-blue, #4f9cf9);
+      --accent-2: var(--vscode-charts-green, #4ec9b0);
+      --accent-3: var(--vscode-charts-purple, #b180d7);
+      --warn: var(--vscode-charts-yellow, #d7a31b);
+      --danger: var(--vscode-charts-red, #f14c4c);
+    }
+    :root[data-standalone="true"] {
+      color-scheme: light;
+      --vscode-editor-background: #eef3f8;
+      --vscode-editor-foreground: #182230;
+      --vscode-descriptionForeground: #566474;
+      --vscode-panel-border: rgba(255, 255, 255, 0.68);
+      --vscode-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      --vscode-editor-font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      --vscode-button-background: #2f6fe0;
+      --vscode-button-foreground: #ffffff;
+      --vscode-button-hoverBackground: #235ec4;
+      --vscode-button-secondaryBackground: rgba(255, 255, 255, 0.54);
+      --vscode-button-secondaryForeground: #2c3a4b;
+      --vscode-button-secondaryHoverBackground: rgba(255, 255, 255, 0.78);
+      --vscode-textLink-foreground: #235ec4;
+      --accent: #2f6fe0;
+      --accent-2: #269b87;
+      --accent-3: #8a7ee8;
+      --warn: #a86f14;
+      --danger: #d84c4c;
+      --glass-surface: rgba(255, 255, 255, 0.58);
+      --glass-strong: rgba(255, 255, 255, 0.76);
+      --glass-border: rgba(255, 255, 255, 0.78);
+      --glass-shadow: 0 16px 48px rgba(64, 78, 99, 0.10);
+      --heat: #e5484d;
+    }
+    /* 主题切换：浅色 = G2 液态玻璃，深色 = G1 visionOS 空间玻璃。
+       选择持久化到 localStorage，未选择时跟随系统；变量驱动，独立端与 IDE 面板共用。 */
+    :root[data-tc-theme="light"] {
+      --scheme: light;
+      color-scheme: var(--scheme);
+      --vscode-editor-background: #eef3f7;
+      --vscode-editor-foreground: #1c2733;
+      --vscode-descriptionForeground: #566474;
+      --vscode-panel-border: rgba(255, 255, 255, 0.72);
+      --vscode-button-background: #2f6fe0;
+      --vscode-button-hoverBackground: #235ec4;
+      --vscode-button-secondaryBackground: rgba(255, 255, 255, 0.54);
+      --vscode-button-secondaryForeground: #2c3a4b;
+      --vscode-button-secondaryHoverBackground: rgba(255, 255, 255, 0.78);
+      --vscode-textLink-foreground: #235ec4;
+      --accent: #2f6fe0;
+      --accent-2: #269b87;
+      --accent-3: #8a7ee8;
+      --muted: #566474;
+      --border: rgba(255, 255, 255, 0.72);
+      --card-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.26));
+      --glass-surface: linear-gradient(150deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.26));
+      --glass-strong: rgba(255, 255, 255, 0.82);
+      --glass-border: rgba(255, 255, 255, 0.72);
+      --glass-shadow: 0 18px 50px rgba(70, 100, 140, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 2px 5px rgba(255, 255, 255, 0.85), inset 0 -10px 22px rgba(90, 120, 160, 0.14);
+      --glass-blur: 42px;
+      --glass-sat: 200%;
+      --glass-radius: 22px;
+      --edge-light: rgba(255, 255, 255, 0.95);
+      --edge-light2: rgba(255, 255, 255, 0.6);
+      --glare: 0.16;
+      --heat: #e5484d;
+    }
+    :root[data-tc-theme="dark"] {
+      --scheme: dark;
+      color-scheme: var(--scheme);
+      --vscode-editor-background: #05070f;
+      --vscode-editor-foreground: #f2f6ff;
+      --vscode-descriptionForeground: #93a1bd;
+      --vscode-panel-border: rgba(255, 255, 255, 0.17);
+      --vscode-button-background: #3d6fd8;
+      --vscode-button-hoverBackground: #5585e8;
+      --vscode-button-secondaryBackground: rgba(255, 255, 255, 0.07);
+      --vscode-button-secondaryForeground: #e8f0ff;
+      --vscode-button-secondaryHoverBackground: rgba(255, 255, 255, 0.14);
+      --vscode-textLink-foreground: #7dd3fc;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --accent-3: #f0abfc;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --muted: #93a1bd;
+      --border: rgba(255, 255, 255, 0.17);
+      --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035));
+      --glass-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035));
+      --glass-strong: rgba(14, 21, 40, 0.92);
+      --glass-border: rgba(255, 255, 255, 0.17);
+      --glass-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 2px 6px rgba(255, 255, 255, 0.14), inset 0 -10px 24px rgba(0, 0, 0, 0.28);
+      --glass-blur: 48px;
+      --glass-sat: 180%;
+      --glass-radius: 26px;
+      --edge-light: rgba(190, 220, 255, 0.75);
+      --edge-light2: rgba(125, 211, 252, 0.4);
+      --glare: 0.13;
+      --heat: #f87171;
+      --bg-body: radial-gradient(ellipse at 50% -20%, #101a3a 0%, #05070f 60%);
+    }
+    * { box-sizing: border-box; }
+    html, body { padding: 0; margin: 0; }
+    body {
+      font-family: var(--vscode-font-family);
+      font-size: 13px;
+      color: var(--vscode-editor-foreground);
+      background: var(--vscode-editor-background);
+      padding: 20px 22px 40px;
+      line-height: 1.5;
+    }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .title { font-size: 20px; font-weight: 600; letter-spacing: 0.2px; display: flex; align-items: center; gap: 10px; }
+    .title small { font-size: 12px; font-weight: 400; color: var(--muted); }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px; font-size: 12px; white-space: nowrap; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    .dot.on { background: var(--accent-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-2) 25%, transparent); }
+    .dot.warn { background: var(--warn); }
+    .dot.err { background: var(--danger); }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button {
+      font-family: inherit; font-size: 12px; cursor: pointer;
+      color: var(--vscode-button-secondaryForeground, var(--vscode-editor-foreground));
+      background: var(--vscode-button-secondaryBackground, transparent);
+      border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px;
+    }
+    button:hover { background: var(--vscode-button-secondaryHoverBackground, color-mix(in srgb, var(--vscode-editor-foreground) 8%, transparent)); }
+    button.primary { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border-color: transparent; }
+    button.primary:hover { background: var(--vscode-button-hoverBackground); }
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .tab { padding: 8px 14px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: 13px; user-select: none; }
+    .tab.active { color: var(--vscode-textLink-foreground, var(--vscode-editor-foreground)); border-bottom-color: var(--vscode-textLink-foreground, var(--accent)); font-weight: 600; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+    .card .label { color: var(--muted); font-size: 11px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card .value { font-size: 21px; font-weight: 600; letter-spacing: 0.2px; white-space: nowrap; }
+    .card .value .unit { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 2px; }
+    .card .hint { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+    .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+    .panel h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .panel h3 span { font-size: 11px; font-weight: 400; color: var(--muted); }
+    .chart { display: flex; align-items: stretch; gap: 6px; height: 196px; padding-top: 8px; overflow-x: auto; overflow-y: hidden; }
+    .chart .col { flex: 1 0 44px; min-width: 44px; display: grid; grid-template-rows: 18px 120px 22px; gap: 4px; }
+    .chart .total-label { border: 0; background: transparent; box-shadow: none; padding: 0; color: var(--vscode-editor-foreground); font-size: 10px; line-height: 18px; text-align: center; white-space: nowrap; }
+    .chart .bar-wrap { height: 120px; display: flex; align-items: flex-end; justify-content: center; }
+    .chart .bar { width: min(38px, 82%); min-height: 2px; display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 8px 8px 3px 3px; background: rgba(90, 105, 125, 0.08); transition: height 180ms ease; }
+    .chart .segment { display: block; width: 100%; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--segment-color); box-shadow: none; cursor: pointer; }
+    .chart .segment:hover { filter: brightness(0.92); }
+    .chart .segment:focus-visible, .chart .total-label:focus-visible, .legend-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .chart .col.today .bar { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+    .chart .day { font-size: 10px; color: var(--muted); white-space: nowrap; text-align: center; }
+    .legend { display: flex; gap: 6px 12px; flex-wrap: wrap; margin-top: 10px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; padding: 2px 5px; font-size: 11px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--segment-color); flex: 0 0 auto; }
+    .breakdown-wrap { overflow-x: auto; }
+    .breakdown-table { min-width: 860px; }
+    .breakdown-note { color: var(--muted); font-size: 11px; margin-top: 8px; }
+    .empty { color: var(--muted); font-size: 12px; padding: 18px 0; text-align: center; }
+    .rowbar { display: grid; grid-template-columns: minmax(86px, 120px) minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 5px 0; }
+    .rowbar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+    .rowbar .track { height: 8px; background: color-mix(in srgb, var(--vscode-editor-foreground) 8%, transparent); border-radius: 999px; overflow: hidden; }
+    .rowbar .fill { height: 100%; border-radius: 999px; background: var(--accent); }
+    .rowbar .num { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .rowbar.host .fill { background: var(--accent-3); }
+    .table-wrap { overflow: auto; max-height: 340px; border: 1px solid var(--border); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th { position: sticky; top: 0; background: var(--vscode-editor-background); z-index: 1; text-align: left; padding: 8px 10px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody td { padding: 7px 10px; border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent); white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: color-mix(in srgb, var(--vscode-editor-foreground) 4%, transparent); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
+    .tag.actual { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 45%, transparent); }
+    .tag.estimated { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+    .setup { border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border)); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; background: color-mix(in srgb, var(--warn) 7%, transparent); }
+    .setup h3 { margin: 0 0 8px; font-size: 13px; }
+    .setup ol { margin: 6px 0 12px; padding-left: 18px; color: var(--muted); font-size: 12px; }
+    .setup li { margin: 3px 0; }
+    .setup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .footer { margin-top: 20px; color: var(--muted); font-size: 11px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .kv { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .kv b { color: var(--vscode-editor-foreground); font-weight: 500; }
+    .mono { font-family: var(--vscode-editor-font-family, monospace); }
+    .scroll-hint { color: var(--muted); font-size: 11px; margin-top: 6px; }
+    .err { color: var(--danger); }
+    .heatmap { display: grid; grid-template-columns: repeat(28, minmax(12px, 1fr)); gap: 4px; overflow-x: auto; overflow-y: hidden; padding-top: 4px; }
+    .heat-cell { width: 100%; aspect-ratio: 1; height: auto; border: 0; padding: 0; border-radius: 3px; background: var(--heat-color, rgba(90, 105, 125, 0.10)); cursor: pointer; }
+    .heat-cell:disabled { cursor: default; }
+    .heat-cell.today { outline: 2px solid var(--accent-2); outline-offset: 1px; }
+    .heat-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .info-btn { border: 0; background: transparent; padding: 0 2px; margin-left: 4px; color: var(--muted); cursor: pointer; font-size: 11px; line-height: 1; border-radius: 4px; }
+    .info-btn:hover { color: var(--vscode-textLink-foreground, var(--accent)); }
+    .info-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(10, 14, 20, 0.45); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+    .modal-overlay[hidden] { display: none; }
+    .modal { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; max-width: 880px; width: 100%; max-height: 82vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .modal-head h3 { margin: 0; font-size: 15px; }
+    .modal-head button { font-size: 16px; line-height: 1; padding: 2px 8px; }
+    .modal-body { display: grid; grid-template-columns: 170px minmax(0, 1fr); overflow: hidden; flex: 1; min-height: 0; }
+    .metrics-nav { border-right: 1px solid var(--border); padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+    .metrics-nav .nav-group { color: var(--muted); font-size: 11px; margin: 8px 0 2px; }
+    .metrics-nav button { text-align: left; border: 0; background: transparent; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: var(--vscode-editor-foreground); cursor: pointer; }
+    .metrics-nav button:hover { background: color-mix(in srgb, var(--vscode-editor-foreground) 8%, transparent); }
+    .metrics-content { padding: 16px 18px; overflow-y: auto; }
+    .metric { padding: 10px 12px; border-radius: 8px; border: 1px solid transparent; margin-bottom: 10px; }
+    .metric.highlight { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+    .metric h4 { margin: 0 0 6px; font-size: 13px; }
+    .metric .m-row { font-size: 12px; margin: 4px 0; }
+    .metric .m-row b { color: var(--muted); font-weight: 600; margin-right: 6px; }
+    .metric .m-formula { font-family: var(--vscode-editor-font-family, monospace); font-size: 11px; background: color-mix(in srgb, var(--vscode-editor-foreground) 6%, transparent); border-radius: 6px; padding: 6px 8px; margin: 6px 0; white-space: pre-wrap; }
+    .metric .m-src { color: var(--muted); font-size: 11px; }
+    @media (max-width: 700px) { .modal-body { grid-template-columns: minmax(0, 1fr); } .metrics-nav { display: none; } }
+
+    /* 3D 玻璃层（深浅主题共用）：厚玻璃表面 + 边缘折射光环 + 指针镜面反光。 */
+    :root[data-tc-theme] .card,
+    :root[data-tc-theme] .panel,
+    :root[data-tc-theme] .setup,
+    :root[data-tc-theme] .modal {
+      background: var(--glass-surface);
+      border-color: var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      -webkit-backdrop-filter: blur(var(--glass-blur, 24px)) saturate(var(--glass-sat, 160%));
+      backdrop-filter: blur(var(--glass-blur, 24px)) saturate(var(--glass-sat, 160%));
+    }
+    :root[data-tc-theme] .card,
+    :root[data-tc-theme] .panel {
+      position: relative;
+      border-radius: var(--glass-radius, 20px);
+      transition: transform 180ms ease-out, box-shadow 250ms ease;
+    }
+    :root[data-tc-theme] .card::before,
+    :root[data-tc-theme] .panel::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+      background: radial-gradient(460px circle at var(--gx, 28%) var(--gy, 18%), rgba(255, 255, 255, var(--glare, 0.10)), transparent 62%);
+    }
+    :root[data-tc-theme] .card::after,
+    :root[data-tc-theme] .panel::after {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.2px; pointer-events: none;
+      background: conic-gradient(from 210deg, transparent 0%, var(--edge-light, rgba(255, 255, 255, 0.5)) 10%, transparent 24%, transparent 52%, var(--edge-light2, rgba(255, 255, 255, 0.22)) 68%, transparent 82%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+    }
+
+    /* 独立端采用浅色玻璃层次，以下规则不影响 IDE 的 VS Code 主题。 */
+    :root[data-standalone="true"] body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-body,
+        radial-gradient(circle at 12% 0%, rgba(156, 200, 240, 0.55), transparent 45%),
+        radial-gradient(circle at 92% 8%, rgba(174, 224, 205, 0.50), transparent 42%),
+        linear-gradient(145deg, #d8e5ef 0%, #eef3f7 48%, #dce8ed 100%));
+      letter-spacing: -0.01em;
+    }
+    :root[data-standalone="true"] .head { margin-bottom: 24px; }
+    :root[data-standalone="true"] .title { font-size: 23px; letter-spacing: -0.03em; }
+    :root[data-standalone="true"] .sub { color: #566474; }
+    :root[data-standalone="true"] .card,
+    :root[data-standalone="true"] .panel,
+    :root[data-standalone="true"] .setup {
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--glass-radius, 20px);
+      box-shadow: var(--glass-shadow);
+      -webkit-backdrop-filter: blur(var(--glass-blur, 24px)) saturate(var(--glass-sat, 160%));
+      backdrop-filter: blur(var(--glass-blur, 24px)) saturate(var(--glass-sat, 160%));
+    }
+    :root[data-standalone="true"] .card { padding: 14px 16px; }
+    :root[data-standalone="true"] .card .label { color: #566474; letter-spacing: 0.02em; }
+    :root[data-standalone="true"] .card .value { font-size: 24px; letter-spacing: -0.035em; }
+    :root[data-standalone="true"] .card .hint { color: #566474; }
+    :root[data-standalone="true"] .panel { padding: 16px 18px; }
+    :root[data-standalone="true"] .panel h3 { font-size: 14px; letter-spacing: -0.01em; }
+    :root[data-standalone="true"] .setup { background: rgba(255, 247, 222, 0.68); }
+    :root[data-standalone="true"] .pill {
+      background: rgba(255, 255, 255, 0.52);
+      border-color: rgba(255, 255, 255, 0.76);
+      box-shadow: 0 4px 16px rgba(64, 78, 99, 0.06);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      backdrop-filter: blur(16px) saturate(150%);
+    }
+    :root[data-standalone="true"] button {
+      color: #2c3a4b;
+      background: rgba(255, 255, 255, 0.54);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 999px;
+      padding: 7px 14px;
+      box-shadow: 0 2px 8px rgba(64, 78, 99, 0.04);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+    }
+    :root[data-standalone="true"] button:hover {
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 4px 14px rgba(64, 78, 99, 0.08);
+      transform: translateY(-1px);
+    }
+    :root[data-standalone="true"] button.primary { background: #2f6fe0; color: #fff; border-color: transparent; }
+    :root[data-standalone="true"] button.primary:hover { background: #235ec4; }
+    :root[data-standalone="true"] .tabs {
+      display: inline-flex;
+      width: fit-content;
+      gap: 3px;
+      padding: 4px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.66);
+      border-radius: 999px;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+    :root[data-standalone="true"] .tab { border: 0; border-radius: 999px; padding: 7px 14px; }
+    :root[data-standalone="true"] .tab.active {
+      color: #235ec4;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 2px 8px rgba(64, 78, 99, 0.08);
+    }
+    :root[data-standalone="true"] .chart .bar { border-radius: 8px 8px 3px 3px; }
+    :root[data-standalone="true"] .chart .col.today .bar { outline-color: #269b87; }
+    :root[data-standalone="true"] .chart .total-label { background: transparent; box-shadow: none; border: 0; border-radius: 0; padding: 0; transform: none; }
+    :root[data-standalone="true"] .chart .segment { background: var(--segment-color); box-shadow: none; backdrop-filter: none; border: 0; border-radius: 0; padding: 0; transform: none; }
+    :root[data-standalone="true"] .heat-cell { border: 0; border-radius: 3px; padding: 0; transform: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--heat-color, rgba(90, 105, 125, 0.10)); width: 100%; aspect-ratio: 1; height: auto; }
+    :root[data-standalone="true"] .heat-cell:hover { filter: brightness(0.92); background: var(--heat-color, rgba(90, 105, 125, 0.10)); }
+    :root[data-standalone="true"] .info-btn { color: #566474; background: transparent; border: 0; transform: none; box-shadow: none; padding: 0 2px; }
+    :root[data-standalone="true"] .modal-overlay { background: rgba(30, 42, 56, 0.35); }
+    :root[data-standalone="true"] .modal { background: var(--glass-strong); border: 1px solid var(--glass-border); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); }
+    :root[data-standalone="true"] .rowbar .track { background: rgba(90, 105, 125, 0.12); }
+    :root[data-standalone="true"] .rowbar .fill { background: linear-gradient(90deg, #5c9cf0, #2f6fe0); }
+    :root[data-standalone="true"] .table-wrap {
+      background: rgba(255, 255, 255, 0.32);
+      border-color: rgba(255, 255, 255, 0.64);
+      border-radius: 16px;
+    }
+    :root[data-standalone="true"] thead th {
+      color: #566474;
+      background: rgba(247, 250, 253, 0.82);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+    :root[data-standalone="true"] tbody td { border-bottom-color: rgba(120, 135, 150, 0.12); }
+    :root[data-standalone="true"] tbody tr:hover td { background: rgba(255, 255, 255, 0.42); }
+    :root[data-standalone="true"] .tag { background: rgba(255, 255, 255, 0.45); }
+    :root[data-standalone="true"] .footer,
+    :root[data-standalone="true"] .scroll-hint,
+    :root[data-standalone="true"] .empty { color: #566474; }
+
+    /* G1 深色：覆盖独立端硬编码的浅色值（变量部分已由主题块接管）。 */
+    :root[data-tc-theme="dark"] body { background: var(--bg-body); }
+    :root[data-tc-theme="dark"] .sub,
+    :root[data-tc-theme="dark"] .card .label,
+    :root[data-tc-theme="dark"] .card .hint,
+    :root[data-tc-theme="dark"] .footer,
+    :root[data-tc-theme="dark"] .scroll-hint,
+    :root[data-tc-theme="dark"] .empty,
+    :root[data-tc-theme="dark"] .info-btn,
+    :root[data-tc-theme="dark"] thead th { color: #93a1bd; }
+    :root[data-tc-theme="dark"] button {
+      color: #e8f0ff;
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.17);
+    }
+    :root[data-tc-theme="dark"] button:hover { background: rgba(255, 255, 255, 0.14); }
+    :root[data-tc-theme="dark"] button.primary { background: #3d6fd8; color: #fff; }
+    :root[data-tc-theme="dark"] button.primary:hover { background: #5585e8; }
+    :root[data-tc-theme="dark"] .tabs { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.14); }
+    :root[data-tc-theme="dark"] .tab.active { color: #bfe3ff; background: rgba(255, 255, 255, 0.14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+    :root[data-tc-theme="dark"] .pill { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.16); }
+    :root[data-tc-theme="dark"] .setup { background: rgba(251, 191, 36, 0.08); }
+    :root[data-tc-theme="dark"] .table-wrap { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); }
+    :root[data-tc-theme="dark"] thead th { background: rgba(10, 16, 32, 0.82); }
+    :root[data-tc-theme="dark"] tbody td { border-bottom-color: rgba(255, 255, 255, 0.07); }
+    :root[data-tc-theme="dark"] tbody tr:hover td { background: rgba(255, 255, 255, 0.05); }
+    :root[data-tc-theme="dark"] .tag { background: rgba(255, 255, 255, 0.06); }
+    :root[data-tc-theme="dark"] .rowbar .track { background: rgba(255, 255, 255, 0.08); }
+    :root[data-tc-theme="dark"] .rowbar .fill { background: linear-gradient(90deg, #4f8cff, #7dd3fc); }
+    :root[data-tc-theme="dark"] .chart .bar { background: rgba(255, 255, 255, 0.06); }
+    :root[data-tc-theme="dark"] .chart .col.today .bar { outline-color: #a78bfa; }
+    :root[data-tc-theme="dark"] .heat-cell { background: var(--heat-color, rgba(255, 255, 255, 0.06)); }
+    :root[data-tc-theme="dark"] .heat-cell.today { outline-color: #a78bfa; }
+    :root[data-tc-theme="dark"] .modal-overlay { background: rgba(2, 6, 16, 0.6); }
+    :root[data-tc-theme="dark"] .modal { background: var(--glass-strong); border-color: var(--glass-border); }
+    :root[data-tc-theme="dark"] .metrics-nav { border-right-color: rgba(255, 255, 255, 0.12); }
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      :root[data-standalone="true"] body { background: #dce6ef; }
+      :root[data-standalone="true"] .card,
+      :root[data-standalone="true"] .panel,
+      :root[data-standalone="true"] .setup,
+      :root[data-standalone="true"] .pill,
+      :root[data-standalone="true"] button,
+      :root[data-standalone="true"] .tabs,
+      :root[data-standalone="true"] .modal { background: #f8fafc; }
+      :root[data-tc-theme="dark"] body { background: #0a1020; }
+      :root[data-tc-theme="dark"] .card,
+      :root[data-tc-theme="dark"] .panel,
+      :root[data-tc-theme="dark"] .setup,
+      :root[data-tc-theme="dark"] .pill,
+      :root[data-tc-theme="dark"] button,
+      :root[data-tc-theme="dark"] .tabs,
+      :root[data-tc-theme="dark"] .modal { background: #101828; }
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      :root[data-standalone="true"] body { background: #dce6ef; }
+      :root[data-standalone="true"] .card,
+      :root[data-standalone="true"] .panel,
+      :root[data-standalone="true"] .setup,
+      :root[data-standalone="true"] .pill,
+      :root[data-standalone="true"] button,
+      :root[data-standalone="true"] .tabs,
+      :root[data-standalone="true"] .modal {
+        background: #ffffff;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      :root[data-tc-theme="dark"] body { background: #0a1020; }
+      :root[data-tc-theme="dark"] .card,
+      :root[data-tc-theme="dark"] .panel,
+      :root[data-tc-theme="dark"] .setup,
+      :root[data-tc-theme="dark"] .pill,
+      :root[data-tc-theme="dark"] button,
+      :root[data-tc-theme="dark"] .tabs,
+      :root[data-tc-theme="dark"] .modal {
+        background: #101828;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      :root[data-standalone="true"] *, :root[data-standalone="true"] *::before, :root[data-standalone="true"] *::after {
+        transition: none !important;
+        transform: none !important;
+      }
+    }
+    @media (max-width: 900px) {
+      :root[data-standalone="true"] body { padding: 18px; }
+      :root[data-standalone="true"] .title { font-size: 21px; }
+      :root[data-standalone="true"] .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      :root[data-standalone="true"] body { padding: 14px; }
+      :root[data-standalone="true"] .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      :root[data-standalone="true"] .card .value { font-size: 20px; }
+      :root[data-standalone="true"] .tab { padding: 7px 10px; }
+      :root[data-standalone="true"] .toolbar { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <div class="title">Trae Token 费用 <small>v{{extensionVersion}}</small></div>
+      <div class="sub" id="subtitle">加载中…</div>
+      <div class="kv" id="kv"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+      <div class="pill"><span class="dot" id="statusDot"></span><span id="statusText">检测中…</span></div>
+      <div class="toolbar">
+        <button id="btnRefresh">刷新</button>
+        <button id="btnSetup" class="primary">开启采集</button>
+        <button id="btnCsv">导出 CSV</button>
+        <button id="btnJson">导出 JSON</button>
+        <button id="btnMetrics">指标说明</button>
+        <button id="btnTheme" aria-label="切换深色/浅色主题">深色</button>
+        <button id="btnDiag">诊断</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="setupCard" class="setup" style="display:none;">
+    <h3>还差一步：开启用量采集</h3>
+    <ol>
+      <li>插件会备份并修改 Trae 的启动参数 <span class="mono" id="argvPath"></span>，写入本机调试端口 <b id="cdpPort"></b>（仅 127.0.0.1）。</li>
+      <li>重启 Trae 后自动开始采集；之后在 Trae 里正常使用 AI 对话即可。</li>
+      <li>数据只保存在本机，不保存提示词/回答正文/鉴权信息；可随时「关闭采集」还原启动参数。</li>
+    </ol>
+    <div class="setup-actions">
+      <button id="btnEnable" class="primary">开启采集（修改参数并重启）</button>
+      <button id="btnManual">仅修改配置</button>
+      <button id="btnCopy">复制启动命令</button>
+      <button id="btnDisable">关闭采集</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-range="today">今日</div>
+    <div class="tab" data-range="week">近 7 日</div>
+    <div class="tab" data-range="month">近 30 日</div>
+    <div class="tab" data-range="all">全部</div>
+    <button class="info-btn" type="button" data-metric="time_range" aria-label="统计时间与数据保留说明" style="align-self:center;">ⓘ</button>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="label">调用轮次<button class="info-btn" type="button" data-metric="calls" aria-label="调用轮次说明">ⓘ</button></div><div class="value" id="kpiCalls">—</div><div class="hint" id="kpiCallsHint">模型调用次数</div></div>
+    <div class="card"><div class="label">总 Token<button class="info-btn" type="button" data-metric="total_tokens" aria-label="总 Token 说明">ⓘ</button></div><div class="value" id="kpiTotal">—</div><div class="hint" id="kpiTotalHint">输入 + 输出</div></div>
+    <div class="card"><div class="label">输入 / 输出<button class="info-btn" type="button" data-metric="input_output" aria-label="输入输出说明">ⓘ</button></div><div class="value" id="kpiInOut" style="font-size:16px;">—</div><div class="hint">prompt / completion</div></div>
+    <div class="card"><div class="label">缓存命中率<button class="info-btn" type="button" data-metric="cache_hit" aria-label="缓存命中率说明">ⓘ</button></div><div class="value" id="kpiCache">—</div><div class="hint" id="kpiCacheHint">缓存读取 / 输入</div></div>
+    <div class="card"><div class="label">估算费用<button class="info-btn" type="button" data-metric="cost" aria-label="估算费用说明">ⓘ</button></div><div class="value" id="kpiCost" style="font-size:16px;">—</div><div class="hint" id="kpiCostHint">按模型单价计算</div></div>
+    <div class="card"><div class="label">平均首响应<button class="info-btn" type="button" data-metric="first_response" aria-label="平均首响应说明">ⓘ</button></div><div class="value" id="kpiFirstResponse" style="font-size:20px;">—</div><div class="hint">服务端首 Token / 网络响应头</div></div>
+    <div class="card"><div class="label">平均耗时<button class="info-btn" type="button" data-metric="duration" aria-label="平均耗时说明">ⓘ</button></div><div class="value" id="kpiDuration" style="font-size:20px;">—</div><div class="hint" id="kpiDurationHint">有效关联时展示</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <h3>活动热力图 <span>最近 8 周</span><button class="info-btn" type="button" data-metric="heatmap" aria-label="热力图说明">ⓘ</button></h3>
+    <div class="heatmap" id="heatmap"></div>
+    <div class="scroll-hint" id="heatmapHint">最近 56 天（上行较早、下行较近），颜色越深用量越大；点击有数据的日期可下钻。</div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>每日 <span id="chartModeLabel">Token</span> <span id="chartRange">—</span><button class="info-btn" type="button" data-metric="daily" aria-label="每日图表说明">ⓘ</button> <button id="btnChartMode" type="button">成本视图</button></h3>
+      <div class="chart" id="chart"></div>
+      <div class="legend" id="modelLegend"></div>
+      <div class="scroll-hint" id="chartHint"></div>
+    </div>
+    <div class="panel">
+      <h3>模型分布 <span>按 Token</span><button class="info-btn" type="button" data-metric="models" aria-label="模型分布说明">ⓘ</button></h3>
+      <div id="models"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <h3><span id="drilldownTitle">Token 成分</span><button class="info-btn" type="button" data-metric="drilldown" aria-label="Token 成分下钻说明">ⓘ</button><button id="clearDrilldown" type="button" hidden>清除筛选</button></h3>
+    <div id="drilldown" class="breakdown-wrap"></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px;">
+    <h3>最近调用 <span id="recentCount"></span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>时间</th><th>模型</th><th class="num">输入</th><th class="num">输出</th>
+            <th class="num">缓存读</th><th class="num">缓存写</th><th class="num">推理</th><th class="num">首响应</th><th class="num">总耗时</th><th class="num">估算费用</th>
+          </tr>
+        </thead>
+        <tbody id="recentBody"><tr><td colspan="10" class="empty">暂无数据</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>本机存储，不保存提示词/回答正文/鉴权信息。现金费用为本地估算，不代表服务商最终账单。</div>
+    <div class="mono" id="generatedAt"></div>
+  </div>
+
+  <div class="modal-overlay" id="metricsOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="metricsTitle">
+      <div class="modal-head">
+        <h3 id="metricsTitle">指标说明</h3>
+        <button id="metricsClose" type="button" aria-label="关闭指标说明">×</button>
+      </div>
+      <div class="modal-body">
+        <nav class="metrics-nav" id="metricsNav" aria-label="指标导航"></nav>
+        <div class="metrics-content" id="metricsContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="{{nonce}}">
+    (() => {
+    // IIFE 隔离顶层声明：TRAE 内置预览浏览器会注入全局词法绑定（如 const vscode），
+    // 顶层重名会触发 SyntaxError 导致整段脚本不执行。
+    const vscode = {{transportAdapter}};
+    const initial = {{initialJson}};
+    if (initial.standalone) document.documentElement.dataset.standalone = 'true';
+    const state = { data: initial, range: (initial && initial.range) || 'today', selectedDay: null, selectedModel: null, chartMode: 'tokens', pendingDay: null };
+    const $ = (id) => document.getElementById(id);
+
+    // 主题切换：浅色 G2 / 深色 G1；手动选择持久化，未选择时跟随系统。
+    const THEME_KEY = 'traeTokenCost.theme';
+    let theme = null;
+    try { theme = localStorage.getItem(THEME_KEY); } catch (e) { /* 隐私模式等场景降级 */ }
+    if (theme !== 'dark' && theme !== 'light') {
+      theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function applyTheme(mode) {
+      // 专用属性名：内置 webview 宿主会在加载期覆盖通用 data-theme，避开冲突。
+      document.documentElement.dataset.tcTheme = mode;
+      const btn = $('btnTheme');
+      if (btn) {
+        btn.textContent = mode === 'dark' ? '浅色' : '深色';
+        btn.setAttribute('aria-label', mode === 'dark' ? '切换到浅色主题' : '切换到深色主题');
+      }
+    }
+    applyTheme(theme);
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function fmtNum(n) {
+      const v = Number(n) || 0;
+      if (v >= 1e8) return (v / 1e8).toFixed(2) + '亿';
+      if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+      if (v >= 1e4) return (v / 1e4).toFixed(1) + 'k';
+      return String(Math.round(v));
+    }
+    function fmtCost(n) {
+      if (n == null || !Number.isFinite(Number(n))) return '—';
+      const value = Number(n);
+      const currency = (state.data.config || {}).currency || 'CNY';
+      return currency + ' ' + (Math.abs(value) >= 1 ? value.toFixed(2) : value.toFixed(6));
+    }
+    function fmtMs(ms) {
+      if (ms == null || !Number.isFinite(Number(ms)) || Number(ms) <= 0) return '—';
+      return Number(ms) < 1000 ? Math.round(Number(ms)) + 'ms' : (Number(ms) / 1000).toFixed(2) + 's';
+    }
+    function outputTps(row) {
+      const duration = Number(row && row.duration_ms);
+      return duration > 0 ? Number(row.output_tokens || 0) / (duration / 1000) : null;
+    }
+    function modelColor(model) {
+      let hash = 0;
+      const text = String(model || 'unknown');
+      for (let index = 0; index < text.length; index += 1) hash = ((hash * 31) + text.charCodeAt(index)) >>> 0;
+      // 扩展到完整色相环，避免少量调色板项在多模型时频繁撞色。
+      return 'hsl(' + (hash % 360) + ', 62%, ' + (42 + ((hash >>> 9) % 12)) + '%)';
+    }
+    function uncachedInput(row) {
+      const value = Number(row.input_tokens) - Number(row.cache_read_tokens || 0) - Number(row.cache_write_tokens || 0);
+      return Number.isFinite(value) && value >= 0 ? value : null;
+    }
+    function fmtTime(ms) {
+      if (!ms) return '—';
+      const d = new Date(ms);
+      const p = (x) => String(x).padStart(2, '0');
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    function dayLabel(day) { return String(day || '').slice(5); }
+
+    function priceHintText(model) {
+      const rows = (state.data && state.data.summary && state.data.summary.models) || [];
+      const row = rows.find((r) => r.model === model);
+      const hint = row && row.price_hint;
+      if (!hint) return '未定价';
+      const cr = hint.cache_read === 'unknown' ? '未知' : (hint.cache_read == null ? '—' : hint.cache_read);
+      return '每百万 tok 参考：输入 ' + (hint.input == null ? '—' : hint.input) +
+        ' / 输出 ' + (hint.output == null ? '—' : hint.output) +
+        ' / 缓存读 ' + cr + ' / 缓存写 ' + (hint.cache_write == null ? '—' : hint.cache_write) +
+        '（基础档，阶梯/峰谷按调用计价）';
+    }
+
+    function renderHeatmap(d) {
+      const days = (d.heatmap && d.heatmap.days) || [];
+      const box = $('heatmap');
+      if (!days.length) { box.innerHTML = '<div class="empty" style="width:100%">暂无数据</div>'; return; }
+      const max = Math.max(1, ...days.map((row) => Number(row.total_tokens) || 0));
+      const now = new Date();
+      const pad = (v) => String(v).padStart(2, '0');
+      const todayKey = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      box.innerHTML = days.map((row) => {
+        const value = Number(row.total_tokens) || 0;
+        const isToday = row.day === todayKey;
+        if (!(value > 0)) {
+          return '<button type="button" class="heat-cell" disabled title="' + esc(row.day + ' · 无记录') + '" aria-label="' + esc(row.day + ' 无记录') + '"></button>';
+        }
+        const level = Math.min(4, Math.max(1, Math.ceil((value / max) * 4)));
+        const percent = 15 + level * 20;
+        const color = 'color-mix(in srgb, var(--heat) ' + percent + '%, transparent)';
+        const selected = state.selectedDay === row.day;
+        return '<button type="button" class="heat-cell' + (isToday ? ' today' : '') + '" data-day="' + esc(row.day) + '" ' +
+          'style="--heat-color:' + color + (selected ? ';outline:2px solid var(--accent);outline-offset:1px' : '') + '" ' +
+          'title="' + esc(row.day + ' · ' + fmtNum(value) + ' tok · ' + row.calls + ' 次') + '" ' +
+          'aria-label="' + esc(row.day + ' ' + value + ' Token') + '"></button>';
+      }).join('');
+    }
+
+    // 指标说明单一数据源：原理 / 计算 / 关键口径 / 数据来源，供弹窗与 ⓘ 入口共用。
+    const METRICS = [
+      { id: 'time_range', group: '时间口径', name: '统计时间与数据保留', principle: '时间基准为采集时刻 observed_at（收到 token 上报的本地时间），非模型服务端时间；按日聚合使用本地日历日。范围换算：今日＝本地 0 点起；近 7 日＝含今天的滚动 7 天；近 30 日＝含今天的滚动 30 天；全部＝不设起点。数据默认保留 180 天，采集进程每 6 小时清理一次超出保留期的记录（启动时也清理一次）。', formula: 'today＝本地 0 点；week＝6 天前 0 点；month＝29 天前 0 点；all＝无过滤；清理条件 observed_at < now − retentionDays×24h', caveat: '保留期可配置 traeTokenCost.retentionDays（1–3650 天，默认 180）；清理不可恢复，长期留存请定期导出 CSV/JSON。「全部」仅覆盖保留期内数据；活动热力图固定最近 56 天，与所选范围无关。', source: 'util.rangeToSinceMs ／ store.prune ／ retentionDays 配置。' },
+      { id: 'calls', group: '用量', name: '调用轮次', principle: '每轮模型调用计 1 次。同轮的多通道上报与重复包按 turn_key、billing_key、±10s 跨通道规则去重合并，避免重复计数。', formula: 'calls = 去重合并后的调用行数', caveat: '合并只增补字段、不重复累加 Token。', source: 'CDP 调试器断点捕获的 tokenUsage 事件。' },
+      { id: 'total_tokens', group: '用量', name: '总 Token', principle: '输入与输出之和；若上报 total 与 in+out 不一致，取较大者兜底。', formula: 'total = max(上报 total, input + output)', caveat: '输入含缓存读写、输出含推理，均不重复加总。', source: '模型 usage 上报字段。' },
+      { id: 'input_output', group: '用量', name: '输入 / 输出', principle: '读取上报的 prompt/input 与 completion/output 字段（含多种别名归一）。', formula: 'input = prompt_tokens / input_tokens；output = completion_tokens / output_tokens', caveat: '输入包含缓存读取与缓存写入；输出包含推理 Token。', source: '模型 usage 上报字段。' },
+      { id: 'uncached', group: '用量', name: '未缓存输入', principle: '从总输入中扣除缓存读取与缓存写入，得到真正新计费的输入部分。', formula: 'uncached = input − cache_read − cache_write', caveat: '结果为负或非有限时显示 —（口径矛盾）。', source: '由 input 与缓存字段推导。' },
+      { id: 'reasoning', group: '用量', name: '推理 Token', principle: '读取上报 reasoning_tokens；它是输出的子集，单独展示但不重复加总或计费。', formula: 'reasoning ⊆ output', caveat: '未上报时显示 —，不猜测。', source: '模型 usage 上报字段。' },
+      { id: 'cache_hit', group: '缓存', name: '缓存命中率', principle: '命中识别：读取模型 usage 上报的缓存读取字段（cache_read_input_tokens / cached_tokens / prompt_tokens_details.cached_tokens 等别名归一），该值 > 0 即计为命中并累加；未上报记 0，不做推测。', formula: 'cache_hit_rate = cache_read_tokens / input_tokens', caveat: '输入为 0 时显示 —；命中率反映上报口径，非服务商账单口径。', source: '模型 usage 缓存读取字段。' },
+      { id: 'cache_read_write', group: '缓存', name: '缓存读取 / 写入', principle: '缓存读取取 cache_read_input_tokens / cached_tokens 等别名；缓存写入取 cache_creation_input_tokens / cache_write_tokens 等别名，归一后累加。', formula: 'cache_read = Σ 上报缓存读取；cache_write = Σ 上报缓存创建', caveat: '未上报记 0；写入价默认同档输入价，可配置覆盖。', source: '模型 usage 缓存字段。' },
+      { id: 'cost', group: '费用', name: '估算费用', principle: '逐调用匹配生效价格版本（effectiveFrom ≤ 调用时间），按每百万 Token 单价计费后汇总；不做跨版本汇总错算。', formula: 'cost = (uncached×input + output×output + cache_read×cacheRead + cache_write×cacheWrite) / 1e6', caveat: '阶梯按总输入选档（非累进）、峰谷按北京时间、思考输出价可选；推理含在输出不重复计；未定价/不完整标记缺价/不完整，不按 0。', source: '内置百炼价格快照 + 用户 modelPrices 覆盖。' },
+      { id: 'first_response', group: '耗时', name: '平均首响应', principle: '双通道：Agent/SSH 模式生成请求不经本机渲染进程，改在断点白名单读取 Trae 随流回传的服务端计时（server_timing_info），platform_first_token_timing 即该次调用的服务端首 Token 耗时；本机可见 /completions POST 时用网络时间戳 responseReceived − requestWillBeSent（响应头耗时）。', formula: 'first_response_ms = platform_first_token_timing（服务端）｜ responseReceived − requestWillBeSent（网络）', caveat: '服务端口径不含客户端网络与排队等待；网络通道仅同会话同轮唯一候选请求关联，多候选/失败/缺标识保持空；0ms 预检/异常样本丢弃。', source: 'CDP 断点白名单读取 tracking.serverTimingEvents ／ Network 事件时间戳（不读正文）。' },
+      { id: 'duration', group: '耗时', name: '平均耗时', principle: '双通道：优先读取 Trae 回传的该次调用服务端处理耗时 server_processing_time（随每次 LLM 调用更新，与 Trae 自身遥测同源）；本机可见 /completions POST 时用 loadingFinished − requestWillBeSent 完整网络耗时。覆盖率 = 有时耗记录 / 总记录。', formula: 'duration_ms = server_processing_time（服务端）｜ loadingFinished − requestWillBeSent（网络）；coverage = timed_calls / calls', caveat: '无法可靠关联的记录保持空，不补造；平均值仅统计有效记录；服务端口径不含客户端网络往返。', source: 'CDP 断点白名单 ／ Network 事件时间戳。' },
+      { id: 'output_tps', group: '耗时', name: '输出 Token/s', principle: '加权吞吐：有效耗时记录的输出 Token 总量除以耗时总秒数，而非逐条 TPS 的简单平均。', formula: 'output_tps = Σ timed_output_tokens / (Σ duration_ms / 1000)', caveat: '按服务端/网络总耗时计，非应用层真实解码速度。', source: '由耗时与输出 Token 推导。' },
+      { id: 'daily', group: '图表与下钻', name: '每日 Token / 成本', principle: '按本地日历日聚合 total_tokens；成本为逐调用计价后按日汇总。成本视图绘单系列柱、不做模型堆叠（阶梯/峰谷按调用计，聚合后计价会错）。', formula: 'day = strftime(localtime)；day_cost = Σ 该日逐调用 cost', caveat: '部分调用未定价时成本仅计已定价合计并提示。', source: 'store 日聚合 + 逐调用计价。' },
+      { id: 'heatmap', group: '图表与下钻', name: '活动热力图', principle: '最近 56 个本地日历日的 total_tokens，按非零值分位映射 5 档颜色强度（红色主调，深浅主题各一套）；2 行 × 28 列铺满面板。', formula: 'level = ceil(value / max × 4)，color = heat 混合 (15 + level×20)%', caveat: '零值日不可点击；与当前时间范围无关；点击范围外日期自动切「全部」下钻。', source: 'store.activityDays(56)。' },
+      { id: 'models', group: '图表与下钻', name: '模型分布', principle: '按 model 聚合 total_tokens 降序取前 8；悬停显示该模型当前生效版本的基础档单价参考。', formula: 'model_total = Σ total_tokens GROUP BY model', caveat: '悬停单价为基础档参考，阶梯/峰谷实际按调用计价。', source: 'store 模型聚合 + price_hint。' },
+      { id: 'drilldown', group: '图表与下钻', name: 'Token 成分下钻', principle: '按 day × model 聚合全量记录（不受 recent 上限限制）；缓存命中率列与 KPI 同口径。', formula: '列缓存命中率 = cache_read_tokens / input_tokens（input=0 → —）', caveat: '推理为输出子集不重复加总；点击柱顶/图例/柱段可筛选日期与模型。', source: 'store.dayModels。' }
+    ];
+    let metricsLastFocus = null;
+    function renderMetrics() {
+      const groups = [];
+      for (const m of METRICS) if (!groups.includes(m.group)) groups.push(m.group);
+      $('metricsNav').innerHTML = groups.map((g) =>
+        '<div class="nav-group">' + esc(g) + '</div>' +
+        METRICS.filter((m) => m.group === g).map((m) => '<button type="button" data-goto="' + m.id + '">' + esc(m.name) + '</button>').join('')
+      ).join('');
+      $('metricsContent').innerHTML = METRICS.map((m) =>
+        '<div class="metric" id="metric-' + m.id + '">' +
+          '<h4>' + esc(m.name) + '</h4>' +
+          '<div class="m-row"><b>原理</b>' + esc(m.principle) + '</div>' +
+          '<div class="m-formula">' + esc(m.formula) + '</div>' +
+          '<div class="m-row"><b>口径</b>' + esc(m.caveat) + '</div>' +
+          '<div class="m-src">来源：' + esc(m.source) + '</div>' +
+        '</div>'
+      ).join('');
+    }
+    function highlightMetric(id) {
+      document.querySelectorAll('.metric.highlight').forEach((el) => el.classList.remove('highlight'));
+      const target = document.getElementById('metric-' + id);
+      if (!target) return;
+      target.classList.add('highlight');
+      target.scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
+    function openMetrics(focusId) {
+      renderMetrics();
+      metricsLastFocus = document.activeElement;
+      $('metricsOverlay').hidden = false;
+      if (focusId) highlightMetric(focusId);
+      else $('metricsContent').scrollTop = 0;
+      $('metricsClose').focus();
+    }
+    function closeMetrics() {
+      $('metricsOverlay').hidden = true;
+      document.querySelectorAll('.metric.highlight').forEach((el) => el.classList.remove('highlight'));
+      if (metricsLastFocus && metricsLastFocus.focus) metricsLastFocus.focus();
+      metricsLastFocus = null;
+    }
+
+    function renderTabs() {
+      document.querySelectorAll('.tab').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-range') === state.range);
+      });
+    }
+
+    function renderStatus(d) {
+      const capture = (d && d.capture) || {};
+      const dot = $('statusDot');
+      const text = $('statusText');
+      dot.className = 'dot';
+      if (capture.connected) dot.classList.add('on');
+      else if (capture.lastError) dot.classList.add('err');
+      else dot.classList.add('warn');
+      text.textContent = capture.label || '未连接';
+      $('statusText').title = capture.lastError || '';
+      const env = d.env || {};
+      const warning = Array.isArray(d.warnings) && d.warnings.length ? ' · ' + d.warnings[0] : '';
+      $('subtitle').textContent = env.appName + ' ' + env.appVersion + ' · 真实 Token 与本地费用估算' + warning;
+      const standalone = Boolean(d.standalone);
+      $('btnSetup').hidden = standalone;
+      $('btnDiag').hidden = standalone;
+      const kv = $('kv');
+      const items = [];
+      if (capture.targetCount) items.push('<span>目标 <b>' + capture.targetCount + '</b></span>');
+      if (capture.breakpoints) items.push('<span>采集点 <b>' + capture.breakpoints + '</b></span>');
+      if (!standalone) {
+        items.push('<span>调试端口 <b>' + (capture.argvPort || ((d.config || {}).cdpPort || '—')) + '</b></span>');
+        items.push('<span>角色 <b>' + (capture.role || '—') + '</b></span>');
+      }
+      if (capture.lastCaptureAt) items.push('<span>最近采集 <b>' + fmtTime(capture.lastCaptureAt) + '</b></span>');
+      kv.innerHTML = items.join('');
+      const setup = $('setupCard');
+      const showSetup = !standalone && !capture.connected;
+      setup.style.display = showSetup ? 'block' : 'none';
+      $('argvPath').textContent = (d.capture && d.capture.argvPath) || 'argv.json';
+      if (d.capture && d.capture.argvPath) $('argvPath').textContent = d.capture.argvPath;
+      $('cdpPort').textContent = (d.config || {}).cdpPort || 9333;
+      $('btnSetup').textContent = showSetup ? '开启采集' : '已连接';
+    }
+
+    function renderKpis(d) {
+      const t = (d.summary && d.summary.total) || {};
+      $('kpiCalls').textContent = Number(t.calls) || 0;
+      $('kpiTotal').textContent = fmtNum(t.total_tokens) + ' tok';
+      $('kpiInOut').textContent = fmtNum(t.input_tokens) + ' / ' + fmtNum(t.output_tokens);
+      const rate = t.cache_hit_rate == null ? null : Number(t.cache_hit_rate);
+      $('kpiCache').textContent = rate == null ? '—' : (rate * 100).toFixed(1) + '%';
+      $('kpiCacheHint').textContent = '缓存读取 ' + fmtNum(t.cache_read_tokens) + ' tok';
+      $('kpiCost').textContent = fmtCost(t.estimated_cost);
+      const unpriced = Number(t.unpriced_calls) || 0;
+      $('kpiCostHint').textContent = unpriced > 0 ? '未定价/不完整 ' + unpriced + ' 次调用' : '已定价 ' + (Number(t.priced_calls) || 0) + ' 次调用';
+      $('kpiFirstResponse').textContent = fmtMs(t.avg_first_response_ms);
+      $('kpiDuration').textContent = fmtMs(t.avg_duration_ms);
+      const coverage = t.timing_coverage == null ? null : Number(t.timing_coverage) * 100;
+      const tps = t.output_tps == null ? null : Number(t.output_tps);
+      $('kpiDurationHint').textContent = coverage == null
+        ? '暂无可靠网络耗时关联'
+        : '覆盖率 ' + coverage.toFixed(1) + '% · 平均输出 ' + (tps == null ? '—' : fmtNum(tps)) + ' tok/s';
+    }
+
+    function renderLegend(models) {
+      $('modelLegend').innerHTML = models.map((model) =>
+        '<button type="button" class="legend-item" data-model="' + esc(model) + '" title="按模型筛选：' + esc(model) + ' · ' + esc(priceHintText(model)) + '">' +
+          '<span class="legend-dot" style="--segment-color:' + modelColor(model) + '"></span>' + esc(model) + '</button>'
+      ).join('');
+    }
+
+    function renderChart(d) {
+      const days = (d.summary && d.summary.days) || [];
+      const dayModels = (d.summary && d.summary.dayModels) || [];
+      const chart = $('chart');
+      $('chartRange').textContent = days.length ? (dayLabel(days[0].day) + ' ~ ' + dayLabel(days[days.length - 1].day)) : '无数据';
+      if (!days.length) {
+        chart.innerHTML = '<div class="empty" style="width:100%">暂无数据</div>';
+        $('modelLegend').innerHTML = '';
+        $('chartHint').textContent = '';
+        return;
+      }
+      if (state.chartMode === 'cost') {
+        const costModels = [...new Set(dayModels.map((row) => row.model))].sort();
+        renderLegend(costModels);
+        const maxCost = Math.max(1e-9, ...days.map((row) => Number(row.estimated_cost) || 0));
+        const nowC = new Date();
+        const padC = (v) => String(v).padStart(2, '0');
+        const todayC = nowC.getFullYear() + '-' + padC(nowC.getMonth() + 1) + '-' + padC(nowC.getDate());
+        chart.innerHTML = days.map((day) => {
+          const cost = Number(day.estimated_cost);
+          const has = Number.isFinite(cost) && cost > 0;
+          const height = has ? Math.max(2, Math.round((cost / maxCost) * 100)) : 2;
+          const label = has ? fmtCost(cost) : '—';
+          return '<div class="col' + (day.day === todayC ? ' today' : '') + '">' +
+            '<button type="button" class="total-label" data-day="' + esc(day.day) + '" title="' + esc(day.day + '：' + label) + '">' + esc(label) + '</button>' +
+            '<div class="bar-wrap"><div class="bar" style="height:' + height + '%;">' +
+            '<button type="button" class="segment" data-day="' + esc(day.day) + '" style="height:100%;--segment-color:var(--accent)" title="' + esc(day.day + '：' + label) + '" aria-label="' + esc(day.day + ' 成本 ' + label) + '"></button>' +
+            '</div></div><div class="day">' + esc(dayLabel(day.day)) + '</div></div>';
+        }).join('');
+        const unpriced = Number((d.summary && d.summary.total && d.summary.total.unpriced_calls) || 0);
+        $('chartHint').textContent = '成本为本地估算（按调用计价后汇总）' + (unpriced > 0 ? '；部分调用未定价，仅计已定价合计' : '');
+        return;
+      }
+      const models = [...new Set(dayModels.map((row) => row.model))].sort();
+      renderLegend(models);
+      const byDay = new Map();
+      for (const row of dayModels) {
+        if (!byDay.has(row.day)) byDay.set(row.day, new Map());
+        byDay.get(row.day).set(row.model, row);
+      }
+      const max = Math.max(1, ...days.map((row) => Number(row.total_tokens) || 0));
+      const now = new Date();
+      const pad = (value) => String(value).padStart(2, '0');
+      const todayKey = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      chart.innerHTML = days.map((day) => {
+        const total = Number(day.total_tokens) || 0;
+        const height = Math.max(2, Math.round((total / max) * 100));
+        const rows = byDay.get(day.day) || new Map();
+        const segments = models.map((model) => {
+          const row = rows.get(model);
+          if (!row || !(Number(row.total_tokens) > 0)) return '';
+          const share = Math.max(0.5, (Number(row.total_tokens) / Math.max(1, total)) * 100);
+          return '<button type="button" class="segment" data-day="' + esc(day.day) + '" data-model="' + esc(model) + '" ' +
+            'style="height:' + share + '%;--segment-color:' + modelColor(model) + '" ' +
+            'title="' + esc(day.day + ' · ' + model + '：' + fmtNum(row.total_tokens) + ' tok · ' + row.calls + ' 次') + '" ' +
+            'aria-label="' + esc(day.day + ' ' + model + ' ' + row.total_tokens + ' Token') + '"></button>';
+        }).join('');
+        const totalLabel = '<button type="button" class="total-label" data-day="' + esc(day.day) + '" title="' + esc(day.day + '：' + fmtNum(total) + ' tok · ' + day.calls + ' 次') + '">' + esc(fmtNum(total)) + '</button>';
+        return '<div class="col' + (day.day === todayKey ? ' today' : '') + '">' + totalLabel +
+          '<div class="bar-wrap"><div class="bar" style="height:' + height + '%;">' + segments + '</div></div>' +
+          '<div class="day">' + esc(dayLabel(day.day)) + '</div></div>';
+      }).join('');
+      const total = days.reduce((sum, row) => sum + (Number(row.total_tokens) || 0), 0);
+      $('chartHint').textContent = '共 ' + fmtNum(total) + ' tok · 柱顶为日总量，颜色为模型成分，点击可下钻';
+    }
+
+    function renderDrilldown(d) {
+      const allRows = (d.summary && d.summary.dayModels) || [];
+      const rows = allRows.filter((row) =>
+        (!state.selectedDay || row.day === state.selectedDay) &&
+        (!state.selectedModel || row.model === state.selectedModel)
+      );
+      $('drilldownTitle').textContent = 'Token 成分 · ' + (state.selectedDay || '全部日期') + ' · ' + (state.selectedModel || '全部模型');
+      $('clearDrilldown').hidden = !state.selectedDay && !state.selectedModel;
+      if (!rows.length) {
+        $('drilldown').innerHTML = '<div class="empty">当前筛选暂无数据</div>';
+        return;
+      }
+      const visible = rows.slice(0, 30);
+      const body = visible.map((row) => {
+        const uncached = uncachedInput(row);
+        const averageDuration = Number(row.timed_calls) > 0 ? Number(row.duration_ms_sum) / Number(row.timed_calls) : null;
+        return '<tr><td>' + esc(row.day) + '</td><td><span class="legend-dot" style="--segment-color:' + modelColor(row.model) + '"></span> ' + esc(row.model) + '</td>' +
+          '<td class="num">' + (uncached == null ? '—' : fmtNum(uncached)) + '</td>' +
+          '<td class="num">' + fmtNum(row.cache_read_tokens) + '</td>' +
+          '<td class="num">' + fmtNum(row.cache_write_tokens) + '</td>' +
+          '<td class="num">' + (Number(row.input_tokens) > 0 ? ((Number(row.cache_read_tokens) / Number(row.input_tokens)) * 100).toFixed(1) + '%' : '—') + '</td>' +
+          '<td class="num">' + fmtNum(row.output_tokens) + '</td>' +
+          '<td class="num">' + (row.reasoning_tokens == null ? '—' : fmtNum(row.reasoning_tokens)) + '</td>' +
+          '<td class="num">' + fmtMs(averageDuration) + '</td><td class="num">' + fmtNum(row.calls) + '</td></tr>';
+      }).join('');
+      $('drilldown').innerHTML = '<table class="breakdown-table"><thead><tr><th>日期</th><th>模型</th>' +
+        '<th class="num">未缓存输入</th><th class="num">缓存读取</th><th class="num">缓存写入</th><th class="num">缓存命中率</th><th class="num">输出</th>' +
+        '<th class="num">推理（子集）</th><th class="num">平均耗时</th><th class="num">调用</th></tr></thead><tbody>' + body + '</tbody></table>' +
+        (rows.length > visible.length ? '<div class="breakdown-note">仅显示前 30 组，共 ' + rows.length + ' 组；可继续按日期和模型筛选。</div>' : '');
+    }
+
+    function renderBars(container, items, opts) {
+      const arr = items || [];
+      if (!arr.length) { container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+      const max = Math.max(1, ...arr.map((x) => Number(x.total_tokens) || 0));
+      container.innerHTML = arr.slice(0, opts.limit || 8).map((x) => {
+        const v = Number(x.total_tokens) || 0;
+        const w = Math.max(1, Math.round((v / max) * 100));
+        const name = opts.name(x);
+        const tip = opts.tooltip ? ' · ' + opts.tooltip(x) : '';
+        return '<div class="rowbar ' + (opts.className || '') + '">' +
+          '<div class="name" title="' + esc(name + tip) + '">' + esc(name) + '</div>' +
+          '<div class="track"><div class="fill" style="width:' + w + '%"></div></div>' +
+          '<div class="num">' + fmtNum(v) + '</div></div>';
+      }).join('');
+    }
+
+    function renderRecent(d) {
+      const rows = (d.recent || []).slice(0, 200);
+      $('recentCount').textContent = rows.length ? '最近 ' + rows.length + ' 条' : '';
+      const body = $('recentBody');
+      if (!rows.length) { body.innerHTML = '<tr><td colspan="10" class="empty">' + (d.standalone ? '本地数据库暂无用量记录。' : '暂无数据：开启采集后，在 Trae 里发一条 AI 对话试试。') + '</td></tr>'; return; }
+      body.innerHTML = rows.map((r) => {
+        const status = r.cost_status === 'ok'
+          ? '<span class="tag actual">估算</span>'
+          : '<span class="tag estimated">' + (r.cost_status === 'missing-price' ? '缺价' : '不完整') + '</span>';
+        const tps = outputTps(r);
+        return '<tr>' +
+          '<td title="' + esc(fmtTime(r.observed_at)) + '">' + esc(fmtTime(r.observed_at)) + '</td>' +
+          '<td title="' + esc(r.model) + '">' + esc(r.model) + '</td>' +
+          '<td class="num">' + fmtNum(r.input_tokens) + '</td>' +
+          '<td class="num">' + fmtNum(r.output_tokens) + '</td>' +
+          '<td class="num">' + fmtNum(r.cache_read_tokens) + '</td>' +
+          '<td class="num">' + fmtNum(r.cache_write_tokens) + '</td>' +
+          '<td class="num">' + (r.reasoning_tokens == null ? '—' : fmtNum(r.reasoning_tokens)) + '</td>' +
+          '<td class="num">' + fmtMs(r.first_response_ms) + '</td>' +
+          '<td class="num" title="' + (tps == null ? '网络总耗时' : '平均输出 ' + fmtNum(tps) + ' tok/s（按网络总耗时）') + '">' + fmtMs(r.duration_ms) + '</td>' +
+          '<td class="num">' + fmtCost(r.estimated_cost) + ' ' + status + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function render() {
+      const d = state.data || {};
+      renderTabs();
+      renderStatus(d);
+      renderKpis(d);
+      renderHeatmap(d);
+      const availableDays = (d.summary && d.summary.days) || [];
+      // pendingDay 必须在 selectedDay 失效清理之前应用，避免异步 update 竞态丢失联动。
+      if (state.pendingDay) {
+        if (availableDays.some((row) => row.day === state.pendingDay)) {
+          state.selectedDay = state.pendingDay;
+          state.pendingDay = null;
+        } else if (state.range === 'all') {
+          state.pendingDay = null;
+        }
+      }
+      if (state.selectedDay && !availableDays.some((row) => row.day === state.selectedDay)) state.selectedDay = null;
+      renderChart(d);
+      renderDrilldown(d);
+      renderBars($('models'), (d.summary && d.summary.models) || [], { name: (x) => (x.model === 'unknown' ? '未知模型' : x.model), limit: 8, tooltip: (x) => priceHintText(x.model) });
+      renderRecent(d);
+      $('generatedAt').textContent = d.generatedAt ? '生成于 ' + fmtTime(d.generatedAt) : '';
+    }
+
+    // ---- interactions
+    document.querySelectorAll('.tab').forEach((el) => {
+      el.addEventListener('click', () => {
+        state.range = el.getAttribute('data-range');
+        state.pendingDay = null;
+        renderTabs();
+        vscode.postMessage({ type: 'refresh', range: state.range });
+      });
+    });
+    document.addEventListener('click', (event) => {
+      const heat = event.target.closest('.heat-cell');
+      if (heat && heat.dataset.day) {
+        state.selectedDay = heat.dataset.day;
+        state.selectedModel = null;
+        const days = (state.data && state.data.summary && state.data.summary.days) || [];
+        if (!days.some((row) => row.day === state.selectedDay)) {
+          state.pendingDay = state.selectedDay;
+          state.range = 'all';
+          renderTabs();
+          vscode.postMessage({ type: 'refresh', range: 'all' });
+        }
+        renderChart(state.data);
+        renderDrilldown(state.data);
+        renderHeatmap(state.data);
+        return;
+      }
+      const target = event.target.closest('[data-day],[data-model]');
+      if (!target) return;
+      state.selectedDay = target.dataset.day || null;
+      state.selectedModel = target.dataset.model || null;
+      renderChart(state.data);
+      renderDrilldown(state.data);
+    });
+    $('clearDrilldown').addEventListener('click', () => {
+      state.selectedDay = null;
+      state.selectedModel = null;
+      state.pendingDay = null;
+      renderChart(state.data);
+      renderDrilldown(state.data);
+      renderHeatmap(state.data);
+    });
+    $('btnChartMode').addEventListener('click', () => {
+      state.chartMode = state.chartMode === 'tokens' ? 'cost' : 'tokens';
+      $('chartModeLabel').textContent = state.chartMode === 'tokens' ? 'Token' : '成本';
+      $('btnChartMode').textContent = state.chartMode === 'tokens' ? '成本视图' : 'Token 视图';
+      renderChart(state.data);
+    });
+    $('btnMetrics').addEventListener('click', () => openMetrics());
+    $('btnTheme').addEventListener('click', () => {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* 忽略持久化失败 */ }
+      applyTheme(theme);
+    });
+    $('metricsClose').addEventListener('click', () => closeMetrics());
+    $('metricsOverlay').addEventListener('click', (event) => { if (event.target === $('metricsOverlay')) closeMetrics(); });
+    document.addEventListener('click', (event) => {
+      const info = event.target.closest('[data-metric]');
+      if (info) { openMetrics(info.dataset.metric); return; }
+      const goto = event.target.closest('[data-goto]');
+      if (goto) highlightMetric(goto.dataset.goto);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !$('metricsOverlay').hidden) closeMetrics();
+    });
+    $('btnRefresh').addEventListener('click', () => vscode.postMessage({ type: 'refresh', range: state.range }));
+    $('btnSetup').addEventListener('click', () => { if (state.data && state.data.capture && state.data.capture.connected) vscode.postMessage({ type: 'refresh', range: state.range }); else vscode.postMessage({ type: 'enableCapture' }); });
+    $('btnEnable').addEventListener('click', () => vscode.postMessage({ type: 'enableCapture' }));
+    $('btnManual').addEventListener('click', () => vscode.postMessage({ type: 'enableCapture' }));
+    $('btnCopy').addEventListener('click', () => vscode.postMessage({ type: 'copyLaunchCommand' }));
+    $('btnDisable').addEventListener('click', () => vscode.postMessage({ type: 'disableCapture' }));
+    $('btnCsv').addEventListener('click', () => vscode.postMessage({ type: 'export', format: 'csv', range: state.range }));
+    $('btnJson').addEventListener('click', () => vscode.postMessage({ type: 'export', format: 'json', range: state.range }));
+    $('btnDiag').addEventListener('click', () => vscode.postMessage({ type: 'diagnostics' }));
+
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || msg.type !== 'update') return;
+      state.data = msg.payload || {};
+      state.range = state.data.range || state.range;
+      render();
+    });
+
+    // 3D 玻璃：指针驱动透视倾斜 + 镜面反光跟随（触摸/减少动态时禁用）。
+    const finePointer = matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (finePointer) {
+      document.querySelectorAll('.card, .panel').forEach((el) => {
+        const strength = el.classList.contains('card') ? 5 : 1.6;
+        el.addEventListener('pointermove', (e) => {
+          const r = el.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+          el.style.setProperty('--gx', (x * 100).toFixed(1) + '%');
+          el.style.setProperty('--gy', (y * 100).toFixed(1) + '%');
+          el.style.transform = 'perspective(900px) rotateX(' + ((0.5 - y) * strength).toFixed(2) + 'deg) rotateY(' + ((x - 0.5) * strength).toFixed(2) + 'deg) translateY(-1px)';
+        });
+        el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+      });
+    }
+
+    render();
+    vscode.postMessage({ type: 'ready' });
+    })();
+  </script>
+</body>
+</html>

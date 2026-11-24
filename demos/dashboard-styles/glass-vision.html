@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>visionOS 空间玻璃 · Token 看板玻璃风 Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{min-height:100vh;font:14px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;color:var(--ink);background:var(--bg-base);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);z-index:-1;opacity:var(--blob-opacity,.55);animation:drift 26s ease-in-out infinite alternate}
+.blob.b1{width:52vw;height:52vw;top:-14vw;left:-10vw;background:var(--blob1)}
+.blob.b2{width:44vw;height:44vw;top:22vh;right:-12vw;background:var(--blob2);animation-delay:-9s}
+.blob.b3{width:40vw;height:40vw;bottom:-16vw;left:24vw;background:var(--blob3);animation-delay:-17s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(5vw,4vh) scale(1.12)}}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:var(--grain,.05);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E")}
+.shell{max-width:1180px;margin:0 auto;padding:30px 26px 90px}
+.panel{position:relative;background:var(--surface);border:1px solid var(--edge);border-radius:var(--radius,26px);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(var(--blur,40px)) saturate(var(--sat,180%));backdrop-filter:blur(var(--blur,40px)) saturate(var(--sat,180%));transition:transform .18s ease-out,box-shadow .25s ease;transform-style:preserve-3d}
+/* 镜面反光：跟随指针的光源在玻璃表面滑动（3D 视角 cues） */
+.panel::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(460px circle at var(--gx,28%) var(--gy,18%),rgba(255,255,255,var(--glare,.10)),transparent 62%);pointer-events:none;transition:opacity .3s}
+/* 边缘折射光环：conic 渐变模拟光线沿玻璃边缘传导（厚度感） */
+.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.2px;background:conic-gradient(from 210deg,transparent 0%,var(--edge-light,rgba(255,255,255,.5)) 10%,transparent 24%,transparent 52%,var(--edge-light2,rgba(255,255,255,.22)) 68%,transparent 82%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;pointer-events:none}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:18px 24px;margin-bottom:18px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.badge{font-size:10px;letter-spacing:.1em;padding:4px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--edge);color:var(--muted);font-weight:600}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-size:12px;padding:7px 15px;border-radius:999px;color:var(--muted);border:1px solid transparent;cursor:default}
+.tab.active{background:var(--chip-active);color:var(--ink);border-color:var(--edge);box-shadow:var(--chip-shadow,none);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.card{padding:18px 20px 16px;transition:transform .18s ease-out,box-shadow .25s ease}
+.card:hover{box-shadow:var(--shadow-hover,var(--shadow))}
+.card .value{transform:translateZ(24px)}
+.card .label{font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:600;text-transform:uppercase}
+.card .value{font-size:30px;font-weight:var(--num-weight,250);letter-spacing:-.03em;margin:7px 0 3px;font-variant-numeric:tabular-nums;line-height:1.1}
+.card .value small{font-size:14px;font-weight:400;color:var(--muted);letter-spacing:0}
+.card .hint{font-size:11px;color:var(--muted)}
+.card.wide{grid-column:span 2}
+.grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:18px}
+.panel .inner{padding:20px 24px}
+.panel h3{font-size:13px;font-weight:600;letter-spacing:.02em;display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
+.panel h3 span{font-size:11px;color:var(--muted);font-weight:400}
+.heatmap{display:grid;grid-template-rows:repeat(2,1fr);grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.heat-cell{aspect-ratio:1;border-radius:5px;background:var(--cell-empty);border:0;padding:0}
+.heat-cell[data-l="1"]{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.heat-cell[data-l="2"]{background:color-mix(in srgb,var(--accent) 42%,transparent)}
+.heat-cell[data-l="3"]{background:color-mix(in srgb,var(--accent) 66%,transparent)}
+.heat-cell[data-l="4"]{background:color-mix(in srgb,var(--accent) 92%,transparent)}
+.bars{display:flex;align-items:flex-end;gap:18px;height:170px;padding-top:24px}
+.bar-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;height:100%;max-width:120px}
+.bar-total{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{width:100%;border-radius:9px 9px 4px 4px;display:flex;flex-direction:column-reverse;overflow:hidden;box-shadow:var(--bar-shadow,none)}
+.seg{width:100%}
+.bar-day{font-size:11px;color:var(--muted)}
+.models{display:flex;flex-direction:column;gap:13px}
+.model-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:12px}
+.model-row .name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-row .num{color:var(--muted);font-variant-numeric:tabular-nums}
+.model-track{grid-column:1/-1;height:7px;border-radius:99px;background:var(--cell-empty);overflow:hidden}
+.model-fill{height:100%;border-radius:99px}
+table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:9px 10px;border-bottom:1px solid var(--edge)}
+td{padding:9px 10px;border-bottom:1px solid var(--row-line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:baseline}
+footer.note{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;margin-top:20px;flex-wrap:wrap}
+.dock{position:fixed;right:22px;bottom:22px;display:flex;gap:8px;align-items:center;padding:9px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%);z-index:9}
+.dock a{font-size:11px;color:var(--muted);text-decoration:none;padding:4px 9px;border-radius:999px}
+.dock a.on{background:var(--chip-active);color:var(--ink);font-weight:600}
+.dock .home{font-weight:600;color:var(--ink)}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.card.wide{grid-column:span 2}}
+@media(max-width:560px){.shell{padding:18px 14px 90px}.cards{grid-template-columns:1fr 1fr;gap:10px}.card .value{font-size:23px}.table-wrap{overflow-x:auto}.dock{right:12px;bottom:12px}}
+@media(prefers-reduced-motion:reduce){.blob{animation:none}.card{transition:none}}
+
+
+:root{--ink:#f2f6ff;--muted:#93a1bd;--accent:#7dd3fc;--accent2:#a78bfa;
+--bg-base:radial-gradient(ellipse at 50% -20%,#101a3a 0%,#05070f 60%);
+--blob1:rgba(79,124,255,.34);--blob2:rgba(125,211,252,.20);--blob3:rgba(167,139,250,.22);--blob-opacity:.8;--grain:.05;
+--surface:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035));
+--edge:rgba(255,255,255,.17);--spec:rgba(255,255,255,.4);
+--shadow:0 24px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.22),inset 0 2px 6px rgba(255,255,255,.14),inset 0 -10px 24px rgba(0,0,0,.28),inset 0 -1px 0 rgba(255,255,255,.05);
+--shadow-hover:0 34px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.3),inset 0 2px 8px rgba(255,255,255,.18),inset 0 -12px 28px rgba(0,0,0,.32);
+--edge-light:rgba(190,220,255,.75);--edge-light2:rgba(125,211,252,.4);--glare:.13;
+--blur:48px;--sat:180%;--radius:28px;--num-weight:200;
+--chip:rgba(255,255,255,.07);--chip-active:rgba(255,255,255,.14);--chip-shadow:inset 0 1px 0 rgba(255,255,255,.2);
+--cell-empty:rgba(255,255,255,.06);--row-line:rgba(255,255,255,.07)}
+.bar{box-shadow:0 0 24px rgba(125,211,252,.14)}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="grain"></div>
+<main class="shell">
+  <header class="top panel">
+    <div class="brand"><h1>Trae Token 费用</h1><span class="badge">VISION SPATIAL</span></div>
+    <div class="tabs"><span class="tab">今日</span><span class="tab">近 7 日</span><span class="tab active">近 30 日</span><span class="tab">全部</span></div>
+  </header>
+  <section class="cards">
+    <div class="card panel"><div class="label">调用轮次</div><div class="value" id="kCalls">—</div><div class="hint">模型调用次数</div></div>
+    <div class="card panel"><div class="label">总 Token</div><div class="value" id="kTokens">—</div><div class="hint">输入 + 输出</div></div>
+    <div class="card panel"><div class="label">输入 / 输出</div><div class="value" id="kInOut" style="font-size:21px;">—</div><div class="hint">prompt / completion</div></div>
+    <div class="card panel"><div class="label">缓存命中率</div><div class="value" id="kCache">—</div><div class="hint" id="kCacheHint">缓存读取 / 输入</div></div>
+    <div class="card panel"><div class="label">估算费用</div><div class="value" id="kCost">—</div><div class="hint">按模型单价计算</div></div>
+    <div class="card panel"><div class="label">平均首响应</div><div class="value" id="kFirst">—</div><div class="hint">服务端首 Token</div></div>
+    <div class="card panel wide"><div class="label">平均耗时</div><div class="value" id="kDur">—</div><div class="hint" id="kDurHint">覆盖率 · 输出速率</div></div>
+  </section>
+  <section class="grid2">
+    <div class="panel"><div class="inner"><h3>每日 Token <span>近 30 日 · 按成分堆叠</span></h3><div class="bars" id="bars"></div></div></div>
+    <div class="panel"><div class="inner"><h3>模型分布 <span>Top 5</span></h3><div class="models" id="models"></div></div></div>
+  </section>
+  <section class="panel" style="margin-bottom:18px;"><div class="inner"><h3>活动热力图 <span>最近 8 周 · 颜色越深用量越大</span></h3><div class="heatmap" id="heatmap"></div></div></section>
+  <section class="panel"><div class="inner table-wrap"><h3>最近调用 <span>12 条</span></h3>
+    <table><thead><tr><th>时间</th><th>模型</th><th class="num">输入</th><th class="num">输出</th><th class="num">缓存命中</th><th class="num">首响应</th><th class="num">耗时</th><th class="num">估算费用</th></tr></thead><tbody id="recent"></tbody></table>
+  </div></section>
+  <footer class="note"><span>合成样例数据：<span id="snapTime"></span> · 不代表真实用量与账单</span><span>无外部资源 · 可离线打开 · visionOS 空间玻璃</span></footer>
+</main>
+<nav class="dock">
+  <a class="home" href="index.html">风格选择</a>
+  <a href="glass-vision.html" class="on">空间</a><a href="glass-liquid.html" class="">液态</a><a href="glass-neon.html" class="">霓虹</a><a href="glass-control.html" class="">磨砂</a>
+</nav>
+<script>
+const DATA = {"total":{"calls":128,"total_tokens":46800000,"input_tokens":46500000,"output_tokens":300000,"cache_read_tokens":38000000,"cache_write_tokens":1200000,"reasoning_tokens":90000,"cache_hit_rate":0.8172,"estimated_cost":86.42,"avg_first_response_ms":2450,"avg_duration_ms":4180,"output_tps":71.8,"timing_coverage":0.92},"models":[{"model":"qwen4-max","calls":52,"total_tokens":26400000},{"model":"deepseek-v4.1-flash-1017","calls":31,"total_tokens":11800000},{"model":"kimi-k3.1-pro","calls":22,"total_tokens":5200000},{"model":"glm-5.3","calls":15,"total_tokens":2600000},{"model":"qwen3.8-max","calls":8,"total_tokens":800000}],"days":[{"day":"2026-11-18","calls":18,"total_tokens":6200000,"input_tokens":6150000,"output_tokens":50000,"cache_read_tokens":5100000,"cache_write_tokens":180000},{"day":"2026-11-19","calls":22,"total_tokens":7400000,"input_tokens":7340000,"output_tokens":60000,"cache_read_tokens":6100000,"cache_write_tokens":200000},{"day":"2026-11-20","calls":26,"total_tokens":8900000,"input_tokens":8830000,"output_tokens":70000,"cache_read_tokens":7300000,"cache_write_tokens":240000},{"day":"2026-11-21","calls":20,"total_tokens":7100000,"input_tokens":7050000,"output_tokens":50000,"cache_read_tokens":5800000,"cache_write_tokens":190000},{"day":"2026-11-22","calls":24,"total_tokens":9600000,"input_tokens":9520000,"output_tokens":80000,"cache_read_tokens":7900000,"cache_write_tokens":260000},{"day":"2026-11-23","calls":18,"total_tokens":7600000,"input_tokens":7540000,"output_tokens":60000,"cache_read_tokens":6200000,"cache_write_tokens":210000}],"heatmap":[{"day":"2026-09-29","total_tokens":0,"calls":0},{"day":"2026-09-30","total_tokens":0,"calls":0},{"day":"2026-10-01","total_tokens":0,"calls":0},{"day":"2026-10-02","total_tokens":0,"calls":0},{"day":"2026-10-03","total_tokens":0,"calls":0},{"day":"2026-10-04","total_tokens":0,"calls":0},{"day":"2026-10-05","total_tokens":0,"calls":0},{"day":"2026-10-06","total_tokens":0,"calls":0},{"day":"2026-10-07","total_tokens":0,"calls":0},{"day":"2026-10-08","total_tokens":0,"calls":0},{"day":"2026-10-09","total_tokens":0,"calls":0},{"day":"2026-10-10","total_tokens":0,"calls":0},{"day":"2026-10-11","total_tokens":0,"calls":0},{"day":"2026-10-12","total_tokens":0,"calls":0},{"day":"2026-10-13","total_tokens":0,"calls":0},{"day":"2026-10-14","total_tokens":0,"calls":0},{"day":"2026-10-15","total_tokens":0,"calls":0},{"day":"2026-10-16","total_tokens":0,"calls":0},{"day":"2026-10-17","total_tokens":0,"calls":0},{"day":"2026-10-18","total_tokens":0,"calls":0},{"day":"2026-10-19","total_tokens":0,"calls":0},{"day":"2026-10-20","total_tokens":0,"calls":0},{"day":"2026-10-21","total_tokens":0,"calls":0},{"day":"2026-10-22","total_tokens":0,"calls":0},{"day":"2026-10-23","total_tokens":0,"calls":0},{"day":"2026-10-24","total_tokens":0,"calls":0},{"day":"2026-10-25","total_tokens":0,"calls":0},{"day":"2026-10-26","total_tokens":0,"calls":0},{"day":"2026-10-27","total_tokens":0,"calls":0},{"day":"2026-10-28","total_tokens":0,"calls":0},{"day":"2026-10-29","total_tokens":0,"calls":0},{"day":"2026-10-30","total_tokens":0,"calls":0},{"day":"2026-10-31","total_tokens":0,"calls":0},{"day":"2026-11-01","total_tokens":0,"calls":0},{"day":"2026-11-02","total_tokens":0,"calls":0},{"day":"2026-11-03","total_tokens":0,"calls":0},{"day":"2026-11-04","total_tokens":0,"calls":0},{"day":"2026-11-05","total_tokens":0,"calls":0},{"day":"2026-11-06","total_tokens":0,"calls":0},{"day":"2026-11-07","total_tokens":0,"calls":0},{"day":"2026-11-08","total_tokens":0,"calls":0},{"day":"2026-11-09","total_tokens":0,"calls":0},{"day":"2026-11-10","total_tokens":0,"calls":0},{"day":"2026-11-11","total_tokens":0,"calls":0},{"day":"2026-11-12","total_tokens":3348436,"calls":12},{"day":"2026-11-13","total_tokens":3356355,"calls":13},{"day":"2026-11-14","total_tokens":3364274,"calls":14},{"day":"2026-11-15","total_tokens":0,"calls":0},{"day":"2026-11-16","total_tokens":3380112,"calls":16},{"day":"2026-11-17","total_tokens":3388031,"calls":17},{"day":"2026-11-18","total_tokens":0,"calls":0},{"day":"2026-11-19","total_tokens":3403869,"calls":19},{"day":"2026-11-20","total_tokens":3411788,"calls":20},{"day":"2026-11-21","total_tokens":3419707,"calls":21},{"day":"2026-11-22","total_tokens":3427626,"calls":22},{"day":"2026-11-23","total_tokens":3435545,"calls":23}],"recent":[{"observed_at":1795435200000,"model":"qwen4-max","input_tokens":30000,"output_tokens":200,"cache_read_tokens":0,"first_response_ms":1400,"duration_ms":2600,"estimated_cost":0.05},{"observed_at":1795435027000,"model":"deepseek-v4.1-flash-1017","input_tokens":44729,"output_tokens":463,"cache_read_tokens":52729,"first_response_ms":2961,"duration_ms":5703,"estimated_cost":0.08},{"observed_at":1795434854000,"model":"kimi-k3.1-pro","input_tokens":59458,"output_tokens":726,"cache_read_tokens":77458,"first_response_ms":2322,"duration_ms":5406,"estimated_cost":0.11},{"observed_at":1795434681000,"model":"glm-5.3","input_tokens":74187,"output_tokens":989,"cache_read_tokens":0,"first_response_ms":1683,"duration_ms":5109,"estimated_cost":0.14},{"observed_at":1795434508000,"model":"qwen3.8-max","input_tokens":88916,"output_tokens":1252,"cache_read_tokens":46916,"first_response_ms":3244,"duration_ms":4812,"estimated_cost":0.16999999999999998},{"observed_at":1795434335000,"model":"qwen4-max","input_tokens":103645,"output_tokens":1515,"cache_read_tokens":71645,"first_response_ms":2605,"duration_ms":4515,"estimated_cost":0.2},{"observed_at":1795434162000,"model":"deepseek-v4.1-flash-1017","input_tokens":118374,"output_tokens":1778,"cache_read_tokens":0,"first_response_ms":1966,"duration_ms":4218,"estimated_cost":0.22999999999999998},{"observed_at":1795433989000,"model":"kimi-k3.1-pro","input_tokens":43103,"output_tokens":2041,"cache_read_tokens":41103,"first_response_ms":3527,"duration_ms":3921,"estimated_cost":0.05},{"observed_at":1795433816000,"model":"glm-5.3","input_tokens":57832,"output_tokens":2304,"cache_read_tokens":65832,"first_response_ms":2888,"duration_ms":3624,"estimated_cost":0.08},{"observed_at":1795433643000,"model":"qwen3.8-max","input_tokens":72561,"output_tokens":2567,"cache_read_tokens":0,"first_response_ms":2249,"duration_ms":3327,"estimated_cost":0.11},{"observed_at":1795433470000,"model":"qwen4-max","input_tokens":87290,"output_tokens":230,"cache_read_tokens":35290,"first_response_ms":1610,"duration_ms":3030,"estimated_cost":0.14},{"observed_at":1795433297000,"model":"deepseek-v4.1-flash-1017","input_tokens":102019,"output_tokens":493,"cache_read_tokens":60019,"first_response_ms":3171,"duration_ms":2733,"estimated_cost":0.16999999999999998}],"generatedAt":1795435200000};
+const $ = (id) => document.getElementById(id);
+const fmtNum = (n) => { const v = Number(n) || 0; if (v >= 1e8) return (v/1e8).toFixed(2) + '亿'; if (v >= 1e6) return (v/1e6).toFixed(1) + 'M'; if (v >= 1e4) return (v/1e4).toFixed(1) + 'k'; return String(Math.round(v)); };
+const fmtMs = (ms) => ms == null || !(Number(ms) > 0) ? '—' : Number(ms) < 1000 ? Math.round(ms) + 'ms' : (ms/1000).toFixed(2) + 's';
+const fmtCost = (n) => n == null ? '—' : '¥' + Number(n).toFixed(2);
+const modelColor = (m) => { let h = 0; const s = String(m || 'unknown'); for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0; return 'hsl(' + (h % 360) + ', 62%, 55%)'; };
+const t = DATA.total;
+$('kCalls').textContent = fmtNum(t.calls);
+$('kTokens').textContent = fmtNum(t.total_tokens);
+$('kInOut').textContent = fmtNum(t.input_tokens) + ' / ' + fmtNum(t.output_tokens);
+$('kCache').textContent = t.cache_hit_rate == null ? '—' : (t.cache_hit_rate * 100).toFixed(1) + '%';
+$('kCacheHint').textContent = '缓存读取 ' + fmtNum(t.cache_read_tokens) + ' tok';
+$('kCost').textContent = fmtCost(t.estimated_cost);
+$('kFirst').textContent = fmtMs(t.avg_first_response_ms);
+$('kDur').textContent = fmtMs(t.avg_duration_ms);
+$('kDurHint').textContent = '覆盖率 ' + (t.timing_coverage * 100).toFixed(1) + '% · ' + (t.output_tps ? t.output_tps.toFixed(0) : '—') + ' tok/s';
+// 热力图：56 天，上行较早下行较近
+const max = Math.max(1, ...DATA.heatmap.map(d => Number(d.total_tokens) || 0));
+$('heatmap').innerHTML = DATA.heatmap.map(d => {
+  const v = Number(d.total_tokens) || 0;
+  const l = v > 0 ? Math.min(4, Math.max(1, Math.ceil(v / max * 4))) : 0;
+  return '<div class="heat-cell" data-l="' + l + '" title="' + d.day + ' · ' + fmtNum(v) + ' tok"></div>';
+}).join('');
+// 每日堆叠柱（按模型成分）
+const dayModels = {};
+DATA.days.forEach(d => { dayModels[d.day] = {}; });
+DATA.recent.forEach(() => {});
+const days = DATA.days;
+const dayMax = Math.max(1, ...days.map(d => Number(d.total_tokens) || 0));
+$('bars').innerHTML = days.map(d => {
+  const total = Number(d.total_tokens) || 0;
+  const h = Math.max(4, Math.round(total / dayMax * 120));
+  const cache = Number(d.cache_read_tokens) || 0;
+  const input = Number(d.input_tokens) || 0;
+  const output = Number(d.output_tokens) || 0;
+  const write = Number(d.cache_write_tokens) || 0;
+  const uncached = Math.max(0, input - cache - write);
+  const parts = [
+    { v: uncached, c: 'var(--accent)' },
+    { v: cache, c: 'color-mix(in srgb, var(--accent) 45%, transparent)' },
+    { v: write, c: 'color-mix(in srgb, var(--accent2, var(--accent)) 70%, transparent)' },
+    { v: output, c: 'var(--accent2, #e879f9)' }
+  ].filter(p => p.v > 0);
+  const sum = parts.reduce((a, p) => a + p.v, 0) || 1;
+  const segs = parts.map(p => '<div class="seg" style="height:' + (p.v / sum * 100).toFixed(1) + '%;background:' + p.c + '"></div>').join('');
+  return '<div class="bar-col"><div class="bar-total">' + fmtNum(total) + '</div><div class="bar" style="height:' + h + 'px">' + segs + '</div><div class="bar-day">' + d.day.slice(5) + '</div></div>';
+}).join('');
+// 模型分布
+const mMax = Math.max(1, ...DATA.models.map(m => Number(m.total_tokens) || 0));
+$('models').innerHTML = DATA.models.map(m => {
+  const v = Number(m.total_tokens) || 0;
+  return '<div class="model-row"><span class="name"><span class="dot" style="background:' + modelColor(m.model) + '"></span>' + m.model + '</span><span class="num">' + fmtNum(v) + ' · ' + m.calls + ' 次</span><div class="model-track"><div class="model-fill" style="width:' + (v / mMax * 100).toFixed(1) + '%;background:' + modelColor(m.model) + '"></div></div></div>';
+}).join('');
+// 最近调用
+$('recent').innerHTML = DATA.recent.map(r => {
+  const d = new Date(r.observed_at);
+  const p = (x) => String(x).padStart(2, '0');
+  const time = p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  const hit = Number(r.input_tokens) > 0 ? ((Number(r.cache_read_tokens)/Number(r.input_tokens))*100).toFixed(0) + '%' : '—';
+  return '<tr><td>' + time + '</td><td><span class="dot" style="background:' + modelColor(r.model) + '"></span>' + r.model + '</td><td class="num">' + fmtNum(r.input_tokens) + '</td><td class="num">' + fmtNum(r.output_tokens) + '</td><td class="num">' + hit + '</td><td class="num">' + fmtMs(r.first_response_ms) + '</td><td class="num">' + fmtMs(r.duration_ms) + '</td><td class="num">' + fmtCost(r.estimated_cost) + '</td></tr>';
+}).join('');
+$('snapTime').textContent = new Date(DATA.generatedAt).toLocaleString('zh-CN', { hour12: false });
+// 3D 玻璃：指针驱动透视倾斜 + 镜面反光跟随（触摸/减少动态时禁用）
+const finePointer = matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches;
+if (finePointer) {
+  document.querySelectorAll('.card, .panel').forEach((el) => {
+    const strength = el.classList.contains('card') ? 6 : 2.2;
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      el.style.setProperty('--gx', (x * 100).toFixed(1) + '%');
+      el.style.setProperty('--gy', (y * 100).toFixed(1) + '%');
+      el.style.transform = 'perspective(900px) rotateX(' + ((0.5 - y) * strength).toFixed(2) + 'deg) rotateY(' + ((x - 0.5) * strength).toFixed(2) + 'deg) translateY(-2px)';
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+</script>
+</body>
+</html>

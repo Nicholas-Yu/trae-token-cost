@@ -1,0 +1,214 @@
+{
+  "name": "trae-token-cost",
+  "displayName": "Trae Token 费用",
+  "description": "在 Trae 内本地采集真实 Token 用量，按日期与模型聚合，并按自定义单价估算费用。",
+  "version": "0.3.0",
+  "publisher": "local",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0b1a1e",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "trae",
+    "token",
+    "usage",
+    "cost",
+    "cache",
+    "ssh"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "main": "./src/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:traeTokenCost.openDashboard",
+    "onCommand:traeTokenCost.enableCapture",
+    "onCommand:traeTokenCost.configureOnly",
+    "onCommand:traeTokenCost.disableCapture",
+    "onCommand:traeTokenCost.copyLaunchCommand",
+    "onCommand:traeTokenCost.refresh",
+    "onCommand:traeTokenCost.exportCsv",
+    "onCommand:traeTokenCost.exportJson",
+    "onCommand:traeTokenCost.showDiagnostics",
+    "onCommand:traeTokenCost.showLog",
+    "onCommand:traeTokenCost.clearData",
+    "onCommand:traeTokenCost.openReadme"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "traeTokenCost.openDashboard",
+        "title": "Trae Token 费用: 打开仪表盘",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.enableCapture",
+        "title": "Trae Token 费用: 开启用量采集（修改启动参数并重启 Trae）",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.configureOnly",
+        "title": "Trae Token 费用: 仅写入启动参数（稍后手动重启）",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.disableCapture",
+        "title": "Trae Token 费用: 关闭采集（还原启动参数）",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.copyLaunchCommand",
+        "title": "Trae Token 费用: 复制带调试端口的启动命令",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.refresh",
+        "title": "Trae Token 费用: 刷新",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.exportCsv",
+        "title": "Trae Token 费用: 导出 CSV",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.exportJson",
+        "title": "Trae Token 费用: 导出 JSON",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.showDiagnostics",
+        "title": "Trae Token 费用: 显示诊断信息",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.showLog",
+        "title": "Trae Token 费用: 查看日志",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.clearData",
+        "title": "Trae Token 费用: 清空本地数据",
+        "category": "Trae Token"
+      },
+      {
+        "command": "traeTokenCost.openReadme",
+        "title": "Trae Token 费用: 打开使用说明",
+        "category": "Trae Token"
+      }
+    ],
+    "configuration": {
+      "title": "Trae Token 费用",
+      "properties": {
+        "traeTokenCost.cdpPort": {
+          "type": "number",
+          "default": 9333,
+          "minimum": 1024,
+          "maximum": 65535,
+          "description": "本机 CDP 调试端口（由插件写入 Trae 启动参数）。修改后需要重启 Trae 生效。"
+        },
+        "traeTokenCost.captureDebugger": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用调试器断点采集（抓取每轮模型调用的 token 用量，主通道）。"
+        },
+        "traeTokenCost.captureNetwork": {
+          "type": "boolean",
+          "default": false,
+          "description": "启用网络响应正文采集（默认关闭，仅用于兼容性诊断）；耗时统计不受影响。"
+        },
+        "traeTokenCost.timingEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用耗时统计：断点白名单读取 Trae 回传的逐调用服务端计时（Agent/SSH 模式主通道），本机可见生成请求时辅以网络时间戳；不读取响应正文。"
+        },
+        "traeTokenCost.pollIntervalMs": {
+          "type": "number",
+          "default": 3000,
+          "minimum": 1000,
+          "maximum": 60000,
+          "description": "CDP 目标轮询间隔（毫秒）。"
+        },
+        "traeTokenCost.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "在状态栏显示今日 token 用量。"
+        },
+        "traeTokenCost.statusBar.metric": {
+          "type": "string",
+          "enum": [
+            "tokens",
+            "cost",
+            "both"
+          ],
+          "default": "tokens",
+          "description": "状态栏显示指标：Token 总量 / 估算费用 / 两者。"
+        },
+        "traeTokenCost.retentionDays": {
+          "type": "number",
+          "default": 180,
+          "minimum": 1,
+          "maximum": 3650,
+          "description": "本地记录保留天数。"
+        },
+        "traeTokenCost.currency": {
+          "type": "string",
+          "default": "CNY",
+          "description": "费用币种代码，例如 CNY 或 USD；首版不做汇率转换。"
+        },
+        "traeTokenCost.modelPrices": {
+          "type": "object",
+          "default": {},
+          "description": "按模型配置每百万 Token 价格版本：{\"provider/model\": [{\"effectiveFrom\": \"2026-01-01\", \"input\": 2, \"output\": 8, \"cacheRead\": 0.2, \"cacheWrite\": 2.5}]}。输入包含缓存读写，输出包含推理 Token。"
+        },
+        "traeTokenCost.defaultRange": {
+          "type": "string",
+          "enum": [
+            "today",
+            "week",
+            "month",
+            "all"
+          ],
+          "default": "today",
+          "description": "打开仪表盘时的默认时间范围。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/extension.js",
+    "dashboard": "node src/standalone/cli.js",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nicholas-Yu/trae-token-cost.git"
+  },
+  "homepage": "https://github.com/Nicholas-Yu/trae-token-cost#readme",
+  "bugs": {
+    "url": "https://github.com/Nicholas-Yu/trae-token-cost/issues"
+  },
+  "dependencies": {
+    "ws": "^8.23.0"
+  }
+}

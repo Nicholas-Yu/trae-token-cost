@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.npm-cache/
+
+# build artifacts / packaged extension
+*.vsix
+*.zip
+release/
+preview/
+
+# local diagnostics / captured data (never commit: contains real session/window data)
+probe-output/
+probe-v2/
+deep-probe/
+docs/probe/samples/
+docs/probe/e2e-final*.txt
+logs/
+
+# OS / editor
+.DS_Store
+*.log
+
+# local scratch
+.tmp-*
+.trae-html-share-packages/
+.screenshots/
+
+# IDE local config (mcp.json / plan documents, machine-specific)
+.trae/
+
+# local acceptance log: contains real usage aggregates, keep out of the repo
+VERIFICATION.md
